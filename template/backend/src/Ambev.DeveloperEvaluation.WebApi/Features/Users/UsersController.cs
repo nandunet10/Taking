@@ -1,10 +1,12 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
 using Ambev.DeveloperEvaluation.Application.Users.DeleteUser;
 using Ambev.DeveloperEvaluation.Application.Users.GetUser;
+using Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.CreateUser;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.DeleteUser;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.GetUser;
+using Ambev.DeveloperEvaluation.WebApi.Features.Users.UpdateUser;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -116,6 +118,48 @@ public class UsersController : BaseController
         {
             Success = true,
             Message = "User deleted successfully"
+        });
+    }
+
+    /// <summary>
+    /// Edits an existing user in the system.
+    /// </summary>
+    /// <param name="userId">The unique identifier of the user to update.</param>
+    /// <param name="request">The user update request.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The updated user details.</returns>
+    [HttpPut("{userId}")]
+    [ProducesResponseType(typeof(ApiResponseWithData<UpdateUserResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> EditUser([FromRoute] Guid userId, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
+    {
+        // Validate request data
+        var validator = new UpdateUserRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        // Map the request to the command
+        var command = _mapper.Map<UpdateUserCommand>(request);
+        command.UserId = userId;
+
+        // Send the command to the handler
+        var response = await _mediator.Send(command, cancellationToken);
+
+        if (response == null)
+            return NotFound(new ApiResponse
+            {
+                Success = false,
+                Message = "User not found"
+            });
+
+        return Ok(new ApiResponseWithData<UpdateUserResponse>
+        {
+            Success = true,
+            Message = "User updated successfully",
+            Data = _mapper.Map<UpdateUserResponse>(response)
         });
     }
 }
