@@ -1,18 +1,23 @@
 ﻿namespace Ambev.DeveloperEvaluation.Common.Security
 {
     /// <summary>
-    /// Representa um item no carrinho (produto e quantidade).
+    /// Represents an item in the cart (product and quantity).
     /// </summary>
     public class CartItem
     {
         /// <summary>
-        /// Identificador do produto.
+        /// Product identifier.
         /// </summary>
         public int ProductId { get; set; }
 
         /// <summary>
-        /// Quantidade do produto no carrinho.
+        /// Quantity of the product in the cart.
         /// </summary>
         public int Quantity { get; set; }
+
+        /// <summary>
+        /// Price of the product.
+        /// </summary>
+        public decimal Price { get; set; }
     }
 }
